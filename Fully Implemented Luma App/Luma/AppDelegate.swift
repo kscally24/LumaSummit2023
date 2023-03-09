@@ -22,12 +22,14 @@ import AEPUserProfile
 import AEPAssurance
 import AEPEdge
 import AEPCore
+import AEPIdentity
 import AEPEdgeIdentity
 import AEPEdgeConsent
 import AEPLifecycle
 import AEPMessaging
 import AEPSignal
 import AEPServices
+import AEPOptimize
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -40,11 +42,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Adobe Experience Platform - Config
         MobileCore.setLogLevel(.trace)
         //Replace with your tags app id - details provided in tutorial
-        let currentAppId = "b5cbd1a1220e/bae66382cce8/launch-88492c6dcb6e-development"
-
-
-        let extensions = [Edge.self, Assurance.self, UserProfile.self, Consent.self, AEPEdgeIdentity.Identity.self, Messaging.self]
-
+        let currentAppId = "dbf7c88bba5a/3ad08cf0f84d/launch-01fd18c24709"
+        
+        // Update: Add Optimize.self to the list
+        let extensions = [Edge.self, Assurance.self, UserProfile.self, Consent.self, AEPIdentity.Identity.self, AEPEdgeIdentity.Identity.self, Messaging.self, Optimize.self]
+        
+        let identityMap = IdentityMap()
+        identityMap.add(item: IdentityItem(id: "12345", authenticatedState: AuthenticatedState.authenticated, primary: true),withNamespace: "attributes")
+        Identity.updateIdentities(with: identityMap)
+        
         let appState = application.applicationState
         MobileCore.registerExtensions(extensions, {
             MobileCore.configureWith(appId: currentAppId)
@@ -53,15 +59,19 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 var addData: [String: Any] = [:]
                 addData["customAppID"] = "1.2.3"
                 MobileCore.lifecycleStart(additionalContextData: addData)
+                
+            //
             }
         })
 
         // Adobe Experience Platform - Profile - Get
+        /*
         UserProfile.getUserAttributes(attributeNames: ["isPaidUser","loyaltyLevel"]){
             attributes, error in
             print("Profile: getUserAttributes: ",attributes as Any)
         }
-
+         */
+        
         // Adobe Experience Platform - Identity - Get Email
         //Get email identities
         Identity.getIdentities { identityMap, error in
