@@ -36,8 +36,6 @@ class Home: UIViewController, UITableViewDelegate, UITableViewDataSource, UIText
     @IBOutlet weak var featuredScrollView: UIScrollView!
     @IBOutlet weak var heroImage: UIImageView!
     @IBOutlet var webView: WKWebView!
-    var targetSettings = TargetSettings()
-    var propositions = Propositions()
 
     let refreshControl = UIRefreshControl()
 
@@ -127,40 +125,8 @@ class Home: UIViewController, UITableViewDelegate, UITableViewDataSource, UIText
         refreshControl.tintColor = MAIN_COLOR
         refreshControl.addTarget(self, action: #selector(refreshData), for: .valueChanged)
         //categoryTableView.addSubview(refreshControl)
-        
-        Optimize.onPropositionsUpdate { propositionsDict in
-            print("tnt, starting 7")
+   
             
-            DispatchQueue.main.async {
-                
-                if let targetProposition = propositionsDict[DecisionScope(name: "app_view_home_hero")] {
-                    //print("tnt 10, \(targetProposition)")
-                    for offer in targetProposition.offers {
-                        
-                        let defaultSrc = "81b91e817aac9a8cd090723111085cdd_mj12-orange_main.jpeg"
-                        var src = "\(offer.content)"
-                        if (src == "") {
-                            src = defaultSrc
-                        }
-                        
-                        print("tnt b4 apply 2")
-                        self.webView.loadHTMLString(src, baseURL: nil)
-                        //offer.meta
-                        offer.displayed();
-                        print("tnt after apply 2")
-                        
-                    }
-                    
-                }
-            }
-            
-        }
-         
-        
-
-        
-        self.retrievePropositions()
-
         // Load categories
         queryCategories()
         
@@ -170,7 +136,6 @@ class Home: UIViewController, UITableViewDelegate, UITableViewDataSource, UIText
         // Layout
         searchTxt.frame.size.height = 54
         
-
         let query = PFQuery(className: PRODUCTS_CLASS_NAME)
         query.whereKey(PRODUCTS_IS_FEATURED, equalTo: true)
         query.fromLocalDatastore()
@@ -408,191 +373,5 @@ class Home: UIViewController, UITableViewDelegate, UITableViewDataSource, UIText
         if refreshControl.isRefreshing { refreshControl.endRefreshing() }
     }
 
-    
-    func retrievePropositions() {
-        
-        var xdmData: [String: Any] = [:]
-        //let stateName = "luma: content: ios: us: en: offers"
-        
-        var data: [String: Any] = [:]
-        
-        //data["__adobe"]["target"] dataKey"] = "5678"
-        
-        //Page View
-        /*
-        xdmData["_techmarketingdemos"] = [
-            "appInformation": [
-                "appStateDetails": [
-                    "screenType": "App",
-                    "screenName": stateName,
-                    "screenView": [
-                        "value": 1
-                    ]
-                ]
-            ]
-        ]
-         */
-
-        let targetScopeHomeHero = DecisionScope(name: "app_view_home_hero")
-        let targetScopeOffers = DecisionScope(name: "app_view_offers")
-        //let targetScopeOffersApplied = DecisionScope(name: "app_view_offers_applied")
-    
-        
-        Optimize.updatePropositions(for: [
-            targetScopeHomeHero, targetScopeOffers
-            //targetScopeHomeHero
-        ], withXdm: xdmData, andData: data)
-
-        
-    }
-
-    func applyPropositions() {
-        var errorMessage = ""
-        let targetScopeHomeHero = DecisionScope(name: "app_view_home_hero")
-        
-        Optimize.getPropositions(for: [
-            targetScopeHomeHero
-        ]) {
-            propositionsDict, error in
-            
-            if let error = error {
-                errorMessage = error.localizedDescription
-                print(errorMessage)
-            } else {
-                guard let propositionsDict = propositionsDict else {
-                    return
-                }
-                
-                if propositionsDict.isEmpty {
-                    self.propositions.targetProposition = nil
-                    return
-                }
-                
-                if let targetProposition = propositionsDict[targetScopeHomeHero] {
-                    for offer in targetProposition.offers {
-                        
-                        let defaultSrc = "81b91e817aac9a8cd090723111085cdd_mj12-orange_main.jpeg"
-                        var src = "\(offer.content)"
-                        if (src == "") {
-                            src = defaultSrc
-                        }
-                        
-                        print("tnt b4 apply")
-                        self.webView.loadHTMLString(src, baseURL: nil)
-                        offer.displayed();
-                        print("tnt after apply")
-                        
-                        
-                        let applyConversionScope = DecisionScope(name: "app_view_offers_applied")
-                        
-                        
-                        
-                        /*
-                         func trackWithData(_ xdmData: [String: Any]?) {
-                         guard let xdmData = xdmData else {
-                         Log.debug(label: OptimizeConstants.LOG_TAG,
-                         "Cannot send track propositions request event, the provided xdmData is nil.")
-                         return
-                         }
-                         
-                         let eventData: [String: Any] = [
-                         OptimizeConstants.EventDataKeys.REQUEST_TYPE: OptimizeConstants.EventDataValues.REQUEST_TYPE_TRACK,
-                         OptimizeConstants.EventDataKeys.PROPOSITION_INTERACTIONS: xdmData
-                         ]
-                         
-                         let event = Event(name: OptimizeConstants.EventNames.TRACK_PROPOSITIONS_REQUEST,
-                         type: EventType.optimize,
-                         source: EventSource.requestContent,
-                         data: eventData)
-                         
-                         MobileCore.dispatch(event: event)
-                         }
-                         */
-                        /*
-                         Optimize.updatePropositions(for: [
-                         applyConversionScope
-                         ], withXdm: xdmData)
-                         
-                         Optimize.getPropositions(for: [
-                         applyConversionScope
-                         ], {
-                         propositionsDict, error in
-                         
-                         if let error = error {
-                         errorMessage = error.localizedDescription
-                         print(errorMessage)
-                         } else {
-                         guard let propositionsDict = propositionsDict else {
-                         return
-                         }
-                         
-                         if propositionsDict.isEmpty {
-                         print("tnt, here1")
-                         
-                         self.propositions.targetProposition = nil
-                         return
-                         }
-                         
-                         if let targetProposition = propositionsDict[applyConversionScope] {
-                         for offer in targetProposition.offers {
-                         print("tnt, here2")
-                         
-                         offer.tapped()
-                         }
-                         }
-                         
-                         }
-                         })
-                         */
-                        
-                        
-                    }
-                }
-            }
-        }
-    }
 }// ./ end
 
-
-    class TargetSettings: ObservableObject {
-        @Published var targetMbox: String
-        @Published var mboxParameters: [String: String]
-        @Published var profileParameters: [String: String]
-        @Published var order: TargetOrder
-        @Published var product: TargetProduct
-        
-        init() {
-            targetMbox = ""
-            mboxParameters = [:]
-            profileParameters = [:]
-            order = TargetOrder(orderId: "", orderTotal: "", purchasedProductIds: "")
-            product = TargetProduct(productId: "", categoryId: "")
-        }
-    }
-
-
-    struct TargetOrder {
-        var orderId: String
-        var orderTotal: String
-        var purchasedProductIds: String
-        func isValid() -> Bool {
-            return !orderId.isEmpty && (!orderTotal.isEmpty && Double(orderTotal) != nil) && !purchasedProductIds.isEmpty
-        }
-    }
-
-
-    struct TargetProduct {
-        var productId: String
-        var categoryId: String
-        func isValid() -> Bool {
-            return !productId.isEmpty && !categoryId.isEmpty
-        }
-    }
-
-    class Propositions: ObservableObject {
-        @Published var targetProposition: Proposition?
-        
-        init() {
-            targetProposition = nil
-        }
-    }
